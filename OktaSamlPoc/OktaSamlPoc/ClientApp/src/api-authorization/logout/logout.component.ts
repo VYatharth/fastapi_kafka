@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthenticationResultStatus, AuthorizeService } from '../authorize.service';
+import { AuthorizeService } from '../authorize.service';
 import { BehaviorSubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { take } from 'rxjs/operators';
@@ -45,46 +45,46 @@ export class LogoutComponent implements OnInit {
   }
 
   private async logout(returnUrl: string): Promise<void> {
-    const state: INavigationState = { returnUrl };
-    const isauthenticated = await this.authorizeService.isAuthenticated().pipe(
-      take(1)
-    ).toPromise();
-    if (isauthenticated) {
-      const result = await this.authorizeService.signOut(state);
-      switch (result.status) {
-        case AuthenticationResultStatus.Redirect:
-          break;
-        case AuthenticationResultStatus.Success:
-          await this.navigateToReturnUrl(returnUrl);
-          break;
-        case AuthenticationResultStatus.Fail:
-          this.message.next(result.message);
-          break;
-        default:
-          throw new Error('Invalid authentication result status.');
-      }
-    } else {
-      this.message.next('You successfully logged out!');
-    }
+    //const state: INavigationState = { returnUrl };
+    //const isauthenticated = await this.authorizeService.isAuthenticated().pipe(
+    //  take(1)
+    //).toPromise();
+    //if (isauthenticated) {
+    //  const result = await this.authorizeService.signOut(state);
+    //  switch (result.status) {
+    //    case AuthenticationResultStatus.Redirect:
+    //      break;
+    //    case AuthenticationResultStatus.Success:
+    //      await this.navigateToReturnUrl(returnUrl);
+    //      break;
+    //    case AuthenticationResultStatus.Fail:
+    //      this.message.next(result.message);
+    //      break;
+    //    default:
+    //      throw new Error('Invalid authentication result status.');
+    //  }
+    //} else {
+    //  this.message.next('You successfully logged out!');
+    //}
   }
 
   private async processLogoutCallback(): Promise<void> {
-    const url = window.location.href;
-    const result = await this.authorizeService.completeSignOut(url);
-    switch (result.status) {
-      case AuthenticationResultStatus.Redirect:
-        // There should not be any redirects as the only time completeAuthentication finishes
-        // is when we are doing a redirect sign in flow.
-        throw new Error('Should not redirect.');
-      case AuthenticationResultStatus.Success:
-        await this.navigateToReturnUrl(this.getReturnUrl(result.state));
-        break;
-      case AuthenticationResultStatus.Fail:
-        this.message.next(result.message);
-        break;
-      default:
-        throw new Error('Invalid authentication result status.');
-    }
+    //const url = window.location.href;
+    //const result = await this.authorizeService.completeSignOut(url);
+    //switch (result.status) {
+    //  case AuthenticationResultStatus.Redirect:
+    //    // There should not be any redirects as the only time completeAuthentication finishes
+    //    // is when we are doing a redirect sign in flow.
+    //    throw new Error('Should not redirect.');
+    //  case AuthenticationResultStatus.Success:
+    //    await this.navigateToReturnUrl(this.getReturnUrl(result.state));
+    //    break;
+    //  case AuthenticationResultStatus.Fail:
+    //    this.message.next(result.message);
+    //    break;
+    //  default:
+    //    throw new Error('Invalid authentication result status.');
+    //}
   }
 
   private async navigateToReturnUrl(returnUrl: string) {

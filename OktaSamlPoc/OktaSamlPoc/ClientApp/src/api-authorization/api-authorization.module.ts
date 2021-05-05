@@ -13,8 +13,6 @@ import { HttpClientModule } from '@angular/common/http';
     HttpClientModule,
     RouterModule.forChild(
       [
-        { path: ApplicationPaths.Register, component: LoginComponent },
-        { path: ApplicationPaths.Profile, component: LoginComponent },
         { path: ApplicationPaths.Login, component: LoginComponent },
         { path: ApplicationPaths.LoginFailed, component: LoginComponent },
         { path: ApplicationPaths.LoginCallback, component: LoginComponent },

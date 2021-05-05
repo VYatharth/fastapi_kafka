@@ -25,6 +25,8 @@ let applicationPaths: ApplicationPathsType = {
   DefaultLoginRedirectPath: '/',
   ApiAuthorizationClientConfigurationUrl: `/_configuration/${ApplicationName}`,
   Login: `authentication/${LoginActions.Login}`,
+  SsoLoginPath: `/Saml/InitiateSingleSignOn`,
+  ReadToken: '/api/Authorization',
   LoginFailed: `authentication/${LoginActions.LoginFailed}`,
   LoginCallback: `authentication/${LoginActions.LoginCallback}`,
   Register: `authentication/${LoginActions.Register}`,
@@ -40,25 +42,15 @@ let applicationPaths: ApplicationPathsType = {
   LogOutPathComponents: [],
   LoggedOutPathComponents: [],
   LogOutCallbackPathComponents: [],
-  IdentityRegisterPath: '/Identity/Account/Register',
-  IdentityManagePath: '/Identity/Account/Manage'
 };
 
-applicationPaths = {
-  ...applicationPaths,
-  LoginPathComponents: applicationPaths.Login.split('/'),
-  LoginFailedPathComponents: applicationPaths.LoginFailed.split('/'),
-  RegisterPathComponents: applicationPaths.Register.split('/'),
-  ProfilePathComponents: applicationPaths.Profile.split('/'),
-  LogOutPathComponents: applicationPaths.LogOut.split('/'),
-  LoggedOutPathComponents: applicationPaths.LoggedOut.split('/'),
-  LogOutCallbackPathComponents: applicationPaths.LogOutCallback.split('/')
-};
 
 interface ApplicationPathsType {
   readonly DefaultLoginRedirectPath: string;
   readonly ApiAuthorizationClientConfigurationUrl: string;
   readonly Login: string;
+  readonly SsoLoginPath: string;
+  readonly ReadToken: string;
   readonly LoginFailed: string;
   readonly LoginCallback: string;
   readonly Register: string;
@@ -74,8 +66,6 @@ interface ApplicationPathsType {
   readonly LogOutPathComponents: string [];
   readonly LoggedOutPathComponents: string [];
   readonly LogOutCallbackPathComponents: string [];
-  readonly IdentityRegisterPath: string;
-  readonly IdentityManagePath: string;
 }
 
 export const ApplicationPaths: ApplicationPathsType = applicationPaths;

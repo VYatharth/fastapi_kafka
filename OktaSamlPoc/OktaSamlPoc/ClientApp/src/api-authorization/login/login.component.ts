@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthorizeService, AuthenticationResultStatus } from '../authorize.service';
+import { AuthorizeService } from '../authorize.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { LoginActions, QueryParameterNames, ApplicationPaths, ReturnUrlType } from '../api-authorization.constants';
@@ -25,20 +25,14 @@ export class LoginComponent implements OnInit {
     const action = this.activatedRoute.snapshot.url[1];
     switch (action.path) {
       case LoginActions.Login:
-        await this.login(this.getReturnUrl());
+        this.redirectToSsoLogin(this.getReturnUrl());
         break;
       case LoginActions.LoginCallback:
-        await this.processLoginCallback();
+        //await this.processLoginCallback();
         break;
       case LoginActions.LoginFailed:
         const message = this.activatedRoute.snapshot.queryParamMap.get(QueryParameterNames.Message);
         this.message.next(message);
-        break;
-      case LoginActions.Profile:
-        this.redirectToProfile();
-        break;
-      case LoginActions.Register:
-        this.redirectToRegister();
         break;
       default:
         throw new Error(`Invalid action '${action}'`);
@@ -46,49 +40,9 @@ export class LoginComponent implements OnInit {
   }
 
 
-  private async login(returnUrl: string): Promise<void> {
-    const state: INavigationState = { returnUrl };
-    const result = await this.authorizeService.signIn(state);
-    this.message.next(undefined);
-    switch (result.status) {
-      case AuthenticationResultStatus.Redirect:
-        break;
-      case AuthenticationResultStatus.Success:
-        await this.navigateToReturnUrl(returnUrl);
-        break;
-      case AuthenticationResultStatus.Fail:
-        await this.router.navigate(ApplicationPaths.LoginFailedPathComponents, {
-          queryParams: { [QueryParameterNames.Message]: result.message }
-        });
-        break;
-      default:
-        throw new Error(`Invalid status result ${(result as any).status}.`);
-    }
-  }
-
-  private async processLoginCallback(): Promise<void> {
-    const url = window.location.href;
-    const result = await this.authorizeService.completeSignIn(url);
-    switch (result.status) {
-      case AuthenticationResultStatus.Redirect:
-        // There should not be any redirects as completeSignIn never redirects.
-        throw new Error('Should not redirect.');
-      case AuthenticationResultStatus.Success:
-        await this.navigateToReturnUrl(this.getReturnUrl(result.state));
-        break;
-      case AuthenticationResultStatus.Fail:
-        this.message.next(result.message);
-        break;
-    }
-  }
-
-  private redirectToRegister(): any {
+  private redirectToSsoLogin(returnUrl:string): any {
     this.redirectToApiAuthorizationPath(
-      `${ApplicationPaths.IdentityRegisterPath}?returnUrl=${encodeURI('/' + ApplicationPaths.Login)}`);
-  }
-
-  private redirectToProfile(): void {
-    this.redirectToApiAuthorizationPath(ApplicationPaths.IdentityManagePath);
+      `${ApplicationPaths.SsoLoginPath}?returnUrl=${encodeURI('/' + returnUrl)}`);
   }
 
   private async navigateToReturnUrl(returnUrl: string) {
