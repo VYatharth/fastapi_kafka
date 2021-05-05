@@ -39,13 +39,17 @@ namespace OktaSamlPoc.Controllers
 
         public async Task<IActionResult> InitiateSingleLogout(string returnUrl)
         {
-            // Remove the JWT.
-            HttpContext.Session.Remove("JWT");
+            //// Remove the JWT.
+            //HttpContext.Session.Remove("JWT");
 
             var ssoState = await _samlServiceProvider.GetStatusAsync();
 
             if (await ssoState.CanSloAsync())
             {
+                if (string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    returnUrl = "/home";
+                }
                 // Request logout at the identity provider.
                 await _samlServiceProvider.InitiateSloAsync(relayState: returnUrl);
 

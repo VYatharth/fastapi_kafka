@@ -42,7 +42,7 @@ export class LoginComponent implements OnInit {
 
   private redirectToSsoLogin(returnUrl:string): any {
     this.redirectToApiAuthorizationPath(
-      `${ApplicationPaths.SsoLoginPath}?returnUrl=${encodeURI('/' + returnUrl)}`);
+      `${ApplicationPaths.SsoLoginPath}?returnUrl=${encodeURI(returnUrl)}`);
   }
 
   private async navigateToReturnUrl(returnUrl: string) {
