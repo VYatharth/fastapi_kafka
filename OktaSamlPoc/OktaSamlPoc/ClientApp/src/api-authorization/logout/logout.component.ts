@@ -26,7 +26,7 @@ export class LogoutComponent implements OnInit {
     switch (action.path) {
       case LogoutActions.Logout:
         if (!!window.history.state.local) {
-          await this.logout(this.getReturnUrl());
+          await this.logout();
         } else {
           // This prevents regular links to <app>/authentication/logout from triggering a logout
           this.message.next('The logout was not initiated from within the page.');
@@ -44,47 +44,21 @@ export class LogoutComponent implements OnInit {
     }
   }
 
-  private async logout(returnUrl: string): Promise<void> {
-    //const state: INavigationState = { returnUrl };
-    //const isauthenticated = await this.authorizeService.isAuthenticated().pipe(
-    //  take(1)
-    //).toPromise();
-    //if (isauthenticated) {
-    //  const result = await this.authorizeService.signOut(state);
-    //  switch (result.status) {
-    //    case AuthenticationResultStatus.Redirect:
-    //      break;
-    //    case AuthenticationResultStatus.Success:
-    //      await this.navigateToReturnUrl(returnUrl);
-    //      break;
-    //    case AuthenticationResultStatus.Fail:
-    //      this.message.next(result.message);
-    //      break;
-    //    default:
-    //      throw new Error('Invalid authentication result status.');
-    //  }
-    //} else {
-    //  this.message.next('You successfully logged out!');
-    //}
+  private async logout(): Promise<void> {
+    const isauthenticated = await this.authorizeService.isAuthenticated().pipe(
+      take(1)
+    ).toPromise();
+    if (isauthenticated) {
+      const redirectUrl = `${window.location.origin}${ApplicationPaths.SloPath}`;
+      window.location.replace(redirectUrl);
+    } 
   }
 
   private async processLogoutCallback(): Promise<void> {
-    //const url = window.location.href;
-    //const result = await this.authorizeService.completeSignOut(url);
-    //switch (result.status) {
-    //  case AuthenticationResultStatus.Redirect:
-    //    // There should not be any redirects as the only time completeAuthentication finishes
-    //    // is when we are doing a redirect sign in flow.
-    //    throw new Error('Should not redirect.');
-    //  case AuthenticationResultStatus.Success:
-    //    await this.navigateToReturnUrl(this.getReturnUrl(result.state));
-    //    break;
-    //  case AuthenticationResultStatus.Fail:
-    //    this.message.next(result.message);
-    //    break;
-    //  default:
-    //    throw new Error('Invalid authentication result status.');
-    //}
+    this.authorizeService.logout();
+    const redirectUrl = `${window.location.origin}${ApplicationPaths.DefaultLoginRedirectPath}`;
+    window.location.replace(redirectUrl);
+    //this.router.navigate([ApplicationPaths.DefaultLoginRedirectPath]);
   }
 
   private async navigateToReturnUrl(returnUrl: string) {

@@ -18,6 +18,7 @@ namespace OktaSamlPoc.Controllers
     {
         private readonly ISamlServiceProvider _samlServiceProvider;
         private readonly IConfiguration _configuration;
+        private const string _logoutCallbackUrl = "/authentication/logout-callback";
 
         public SamlController(
             ISamlServiceProvider samlServiceProvider,
@@ -39,29 +40,24 @@ namespace OktaSamlPoc.Controllers
 
         public async Task<IActionResult> InitiateSingleLogout(string returnUrl)
         {
-            //// Remove the JWT.
-            //HttpContext.Session.Remove("JWT");
+            
 
             var ssoState = await _samlServiceProvider.GetStatusAsync();
-
+            
             if (await ssoState.CanSloAsync())
             {
-                if (string.IsNullOrWhiteSpace(returnUrl))
-                {
-                    returnUrl = "/home";
-                }
+               
                 // Request logout at the identity provider.
-                await _samlServiceProvider.InitiateSloAsync(relayState: returnUrl);
+                await _samlServiceProvider.InitiateSloAsync();
 
                 return new EmptyResult();
             }
-
-            if (!string.IsNullOrEmpty(returnUrl))
+            else
             {
-                return Redirect(returnUrl);
+                ClearSessionData();
+                return Redirect(_logoutCallbackUrl);
             }
 
-            return new EmptyResult();
         }
 
         public async Task<IActionResult> AssertionConsumerService()
@@ -85,8 +81,7 @@ namespace OktaSamlPoc.Controllers
 
         public async Task<IActionResult> SingleLogoutService()
         {
-            // Remove the JWT.
-            HttpContext.Session.Remove("JWT");
+            
 
             // Receive the single logout request or response.
             // If a request is received then single logout is being initiated by the identity provider.
@@ -95,11 +90,8 @@ namespace OktaSamlPoc.Controllers
 
             if (sloResult.IsResponse)
             {
-                // SP-initiated SLO has completed.
-                if (!string.IsNullOrEmpty(sloResult.RelayState))
-                {
-                    return Redirect(sloResult.RelayState);
-                }
+                ClearSessionData();
+                return Redirect(_logoutCallbackUrl);
             }
             else
             {
@@ -108,6 +100,18 @@ namespace OktaSamlPoc.Controllers
             }
 
             return new EmptyResult();
+        }
+
+        private void ClearSessionData()
+        {
+            HttpContext.Session.Remove("JWT");
+            
+           
+                Response.Cookies.Delete(".AspNetCore.Session", new CookieOptions()
+                {
+                    SameSite=SameSiteMode.Lax
+                });
+            
         }
 
         private JwtSecurityToken CreateJwtSecurityToken(ISpSsoResult ssoResult)

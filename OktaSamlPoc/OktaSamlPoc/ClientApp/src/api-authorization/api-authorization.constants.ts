@@ -26,7 +26,7 @@ let applicationPaths: ApplicationPathsType = {
   ApiAuthorizationClientConfigurationUrl: `/_configuration/${ApplicationName}`,
   Login: `authentication/${LoginActions.Login}`,
   SsoLoginPath: `/Saml/InitiateSingleSignOn`,
-  ReadToken: '/api/Authorization',
+  SloPath: `/Saml/InitiateSingleLogout`,
   LoginFailed: `authentication/${LoginActions.LoginFailed}`,
   LoginCallback: `authentication/${LoginActions.LoginCallback}`,
   Register: `authentication/${LoginActions.Register}`,
@@ -42,6 +42,7 @@ let applicationPaths: ApplicationPathsType = {
   LogOutPathComponents: [],
   LoggedOutPathComponents: [],
   LogOutCallbackPathComponents: [],
+  ApiReadToken: '/api/Authorization',
 };
 
 
@@ -50,7 +51,8 @@ interface ApplicationPathsType {
   readonly ApiAuthorizationClientConfigurationUrl: string;
   readonly Login: string;
   readonly SsoLoginPath: string;
-  readonly ReadToken: string;
+  readonly SloPath: string;
+  readonly ApiReadToken: string;
   readonly LoginFailed: string;
   readonly LoginCallback: string;
   readonly Register: string;

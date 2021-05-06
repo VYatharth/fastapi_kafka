@@ -31,12 +31,16 @@ export class AuthorizeService {
   }
 
   public isAuthenticated(): Observable<boolean> {
-    // get the token
     return this.getToken().pipe(map(token => !!token));
   }
 
   // Get JWT from server
   public retrieveJwt() {
-    return this.http.get(ApplicationPaths.ReadToken, { withCredentials: true, responseType: 'text' });
+    return this.http.get(ApplicationPaths.ApiReadToken, { withCredentials: true, responseType: 'text' });
+  }
+
+  public logout() {
+    localStorage.clear();
+
   }
 }
