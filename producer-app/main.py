@@ -1,41 +1,78 @@
 import os
 from contextlib import asynccontextmanager
-
-from aiokafka import AIOKafkaProducer
+from kafka import KafkaProducer
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+import json
+from models import KafkaMessage
+from kafka.admin import KafkaAdminClient, NewTopic
 
 load_dotenv()
 
 KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_SERVERS_URL")
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC")
 PRODUCER_ID = os.environ.get("PRODUCER_ID")
+ADMIN_CLIENT_ID = os.environ.get("ADMIN_CLIENT_ID")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup event
     print("Starting up...")
-    app.state.kafka_producer = AIOKafkaProducer(bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS)
-    await app.state.kafka_producer.start()
 
-    yield
+    admin_client = KafkaAdminClient(
+        bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,  # Replace with your Kafka broker address
+        client_id=ADMIN_CLIENT_ID
+    )
 
-    # Shutdown event
-    print("Shutting down...")
-    await app.state.kafka_producer.stop()
-    
+    try:
+        if KAFKA_TOPIC not in admin_client.list_topics():
+            topic_list = [NewTopic(name=KAFKA_TOPIC, num_partitions=1, replication_factor=1)]
+            admin_client.create_topics(new_topics=topic_list, validate_only=False)
+            print(f"Topic '{KAFKA_TOPIC}' created successfully.")
+    except Exception as e:
+        print(f"Error creating topic: {e}")
+        raise HTTPException(status_code=500, detail="Error while creating topic in Kafka")
+    finally:
+        admin_client.close()
+
+
+    try:
+        app.state.kafka_producer = KafkaProducer(
+            bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
+            value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+            client_id=PRODUCER_ID,
+        )
+
+        yield
+
+        # Shutdown event
+        print("Shutting down...")
+
+        if app.state.kafka_producer:
+            app.state.kafka_producer.flush()
+
+    finally:    
+        if app.state.kafka_producer:
+            app.state.kafka_producer.close()
+
+def send_kafka_message(app: FastAPI, message: KafkaMessage):
+    try:
+        app.state.kafka_producer.send(KAFKA_TOPIC, message)
+    except Exception as e:
+        print(f"Error sending message to Kafka: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send message to Kafka")
+
+
 app = FastAPI(lifespan=lifespan)
+
 
 @app.post("/produce")
 async def produce_message(message: str):
-    try:
-        await app.state.kafka_producer.send_and_wait(KAFKA_TOPIC, message.encode("utf-8"))
-    except Exception as e:
-        print(f"Error sending message to Kafka: {e}")
-        raise HTTPException(status_code=500, detail='Failed to send message to Kafka')
+    send_kafka_message(app, KafkaMessage(content=message))
 
     return {"status": "Message sent to Kafka"}
+
 
 @app.get("/health")
 async def health_check():
