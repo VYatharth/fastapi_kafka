@@ -4,7 +4,7 @@ from kafka import KafkaProducer
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 import json
-from models import KafkaMessage
+from producer_app.models import KafkaMessage
 from kafka.admin import KafkaAdminClient, NewTopic
 
 load_dotenv()
@@ -58,7 +58,7 @@ async def lifespan(app: FastAPI):
 
 def send_kafka_message(app: FastAPI, message: KafkaMessage):
     try:
-        app.state.kafka_producer.send(KAFKA_TOPIC, message)
+        app.state.kafka_producer.send(KAFKA_TOPIC, message.model_dump())
     except Exception as e:
         print(f"Error sending message to Kafka: {e}")
         raise HTTPException(status_code=500, detail="Failed to send message to Kafka")
