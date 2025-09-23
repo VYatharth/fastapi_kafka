@@ -1,11 +1,11 @@
+import json
 import os
 from contextlib import asynccontextmanager
-from kafka import KafkaProducer
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-import json
-from producer_app.models import KafkaMessage
+from kafka import KafkaProducer
 from kafka.admin import KafkaAdminClient, NewTopic
+from producer_app.models import KafkaMessage
 
 load_dotenv()
 
@@ -20,8 +20,9 @@ async def lifespan(app: FastAPI):
     # Startup event
     print("Starting up...")
 
+    # create Kafka topic if it doesn't exist
     admin_client = KafkaAdminClient(
-        bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,  # Replace with your Kafka broker address
+        bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS, 
         client_id=ADMIN_CLIENT_ID
     )
 
@@ -38,6 +39,7 @@ async def lifespan(app: FastAPI):
 
 
     try:
+        # create producer
         app.state.kafka_producer = KafkaProducer(
             bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
             value_serializer=lambda v: json.dumps(v).encode("utf-8"),
