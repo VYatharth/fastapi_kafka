@@ -49,8 +49,6 @@ async def poll_for_messages(app: FastAPI):
     """Asynchronously consumes messages from Kafka."""
     try:
         while not stop_polling_event.is_set():
-                # Run blocking consumer.poll() in a separate thread
-                # messages = await asyncio.to_thread(app.state.kafka_consumer.poll, timeout_ms=1000)
                 messages = app.state.kafka_consumer.poll(5000, max_records=100)
                 if messages:
                     for topic_partition, records in messages.items():
