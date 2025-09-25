@@ -1,0 +1,1 @@
+Refer this article for explanation of the code - https://medium.com/@varshneya.yathartha/kafka-with-fastapi-5998b95bcc82.
